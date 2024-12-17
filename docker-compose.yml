@@ -13,16 +13,16 @@ services:
     restart: always
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: backend_django
-    volumes:
-      - staticfiles:/app/staticfiles
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
     depends_on:
       - db
+    environment:
+      - DATABASE_URL=postgres://postgres:@Licitacao360.1000@postgres_db:5432/Licitacao360
     ports:
       - "8000:8000"
+
 
   nginx:
     image: nginx:latest
