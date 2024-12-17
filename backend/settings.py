@@ -118,7 +118,7 @@ DATABASES = {
         'NAME': 'licitacao360',
         'USER': 'postgres',
         'PASSWORD': '@Licitacao360.1000',
-        'HOST': 'db',  # ou o IP do servidor PostgreSQL
+        'HOST': 'postgres_db',  # ou o IP do servidor PostgreSQL
         'PORT': '5432',       # Porta padrão do PostgreSQL
     }
 }
