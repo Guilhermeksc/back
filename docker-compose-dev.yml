@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "@Licitacao360.1000"
+      POSTGRES_DB: Licitacao360
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend_django
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
