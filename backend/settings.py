@@ -15,7 +15,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-le-fmd9xx5e@o0s3c5x)6a2!8v7o5cj!qsrjzkr$g%stt5#6do'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+
 
 ALLOWED_HOSTS = [
     'localhost', 
@@ -118,7 +119,7 @@ DATABASES = {
         'NAME': 'licitacao360',
         'USER': 'postgres',
         'PASSWORD': '@Licitacao360.1000',
-        'HOST': 'postgres_db',  # ou o IP do servidor PostgreSQL
+        'HOST': 'localhost',  # ou o IP do servidor PostgreSQL
         'PORT': '5432',       # Porta padrão do PostgreSQL
     }
 }
@@ -170,14 +171,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # URL e diretório raiz para arquivos estáticos
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/' 
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+# Diretórios adicionais de arquivos estáticos (se necessário)
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuração para servir os arquivos de build do Angular
-TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'static', 'frontend')]
+TEMPLATE_DIRS = [os.path.join(BASE_DIR, 'static')]
 
