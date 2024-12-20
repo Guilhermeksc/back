@@ -1,5 +1,29 @@
 from django.db import models
 
+class Planejamento(models.Model):
+    STATUS_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('concluido', 'Concluído'),
+        ('cancelado', 'Cancelado'),
+    ]
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
+    id = models.AutoField(primary_key=True)
+    nup = models.CharField(max_length=50, unique=True)
+    objeto = models.TextField()
+    om = models.CharField(max_length=100)
+    valor = models.DecimalField(max_digits=15, decimal_places=2)
+    sequencial_pncp = models.CharField(max_length=50, unique=True, null=True, blank=True)
+    irp = models.BooleanField(default=False)
+    data_sessao = models.DateField()
+    coordenador = models.CharField(max_length=100)
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Planejamento {self.nup} - {self.status}"
+
 class ControleContratos(models.Model):
     uasg = models.CharField(max_length=10, default="000000", verbose_name="UASG")
 

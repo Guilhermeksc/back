@@ -140,33 +140,72 @@ def get_api_data(url):
     print("Consulta à API concluída com sucesso!")
     return response.json()
 
-# View principal
+from django.http import JsonResponse
+from django.db import connection
+from django.views.decorators.csrf import csrf_exempt
+import logging
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+import json
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+def parse_decimal(value):
+    """Converte valores no formato brasileiro para o formato do PostgreSQL."""
+    if value:
+        try:
+            return float(value.replace('.', '').replace(',', '.'))
+        except ValueError:
+            logger.warning("Erro ao converter valor: %s", value)
+    return None
+
+@csrf_exempt
 def consulta_api(request):
     def get_table_list():
-        """ Obtém todas as tabelas que começam com 'controle_' no esquema público """
+        """Obtém todas as tabelas disponíveis que começam com 'controle_'."""
         with connection.cursor() as cursor:
             cursor.execute("""
                 SELECT tablename 
                 FROM pg_tables 
-                WHERE schemaname = 'public' 
-                AND tablename LIKE 'controle_%'
+                WHERE schemaname = 'public' AND tablename LIKE 'controle_%'
             """)
             return [row[0] for row in cursor.fetchall()]
 
     if request.method == 'POST':
-        uasg = request.POST.get('uasg')
-        table_name = f"controle_{uasg.replace('controle_', '')}"
-
-        api_url = f"https://contratos.comprasnet.gov.br/api/contrato/ug/{uasg}"
-
         try:
-            response = requests.get(api_url, headers={"accept": "application/json"}, timeout=10, verify=False)
+            # Parse do corpo da requisição
+            body = json.loads(request.body.decode('utf-8'))
+            uasg = body.get('uasg')
+            if not uasg:
+                logger.warning("Código UASG não fornecido.")
+                return JsonResponse({'success': False, 'message': 'Código UASG não fornecido.'}, status=400)
+
+            logger.info("Código UASG recebido: %s", uasg)
+
+            # URL da API externa
+            api_url = f"https://contratos.comprasnet.gov.br/api/contrato/ug/{uasg}"
+
+            # Configurar sessão com retries
+            session = requests.Session()
+            retry = Retry(
+                total=5,
+                backoff_factor=1,
+                status_forcelist=[500, 502, 503, 504],
+                allowed_methods=["GET"],
+            )
+            adapter = HTTPAdapter(max_retries=retry)
+            session.mount("https://", adapter)
+
+            # Consulta à API externa
+            response = session.get(api_url, headers={"accept": "application/json"}, timeout=10, verify=False)
             response.raise_for_status()
             data = response.json()
 
-            criar_tabela_uasg(uasg.replace('controle_', ''))
-
-            # Inserir os dados no banco
+            # Criar tabela e armazenar dados
+            criar_tabela_uasg(uasg)
+            table_name = f"controle_{uasg}"
             with connection.cursor() as cursor:
                 for item in data:
                     cursor.execute(f"""
@@ -193,28 +232,54 @@ def consulta_api(request):
                         item["contratante"]["orgao"]["unidade_gestora"].get("nome"),
                         item["links"].get("historico"),
                     ))
-            return JsonResponse({'success': True, 'message': f"Tabela {table_name} atualizada."})
+            return JsonResponse({'success': True, 'message': f"Tabela {table_name} criada e atualizada com sucesso."})
 
+        except requests.RequestException as e:
+            logger.error("Erro ao consultar API externa: %s", e)
+            return JsonResponse({'success': False, 'message': f"Erro ao consultar API externa: {str(e)}"}, status=500)
         except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)})
+            logger.error("Erro ao processar dados: %s", e)
+            return JsonResponse({'success': False, 'message': f"Erro ao processar dados: {str(e)}"}, status=500)
 
-    # Para GET: Exibir dados da tabela selecionada
-    tabela = request.GET.get('tabela')
-    if tabela:
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{tabela}'")
-            columns = [row[0] for row in cursor.fetchall()]
+    elif request.method == 'GET':
+        tabela = request.GET.get('tabela')
+        if tabela:
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{tabela}'")
+                    columns = [row[0] for row in cursor.fetchall()]
 
-            cursor.execute(f"SELECT * FROM {tabela}")
-            data = cursor.fetchall()
+                    cursor.execute(f"SELECT * FROM {tabela}")
+                    data = cursor.fetchall()
 
-        return JsonResponse({'success': True, 'columns': columns, 'data': data})
+                return JsonResponse({'success': True, 'columns': columns, 'data': data})
+            except Exception as e:
+                logger.error("Erro ao recuperar dados da tabela: %s", e)
+                return JsonResponse({'success': False, 'message': f"Erro ao recuperar dados: {str(e)}"}, status=500)
 
-    # Renderizar o template com as tabelas disponíveis
-    return render(request, 'consulta_api.html', {'tables': get_table_list()})
+        # Retornar lista de tabelas disponíveis
+        return JsonResponse({'success': True, 'tables': get_table_list()})
 
-from django.http import JsonResponse
-from django.db import connection
+    logger.warning("Método não permitido: %s", request.method)
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+
+# Função para buscar dados da API com retry
+def get_api_data(url):
+    session = requests.Session()
+    retry = Retry(
+        total=5,  # Número máximo de tentativas
+        backoff_factor=1,  # Tempo entre tentativas (em segundos)
+        status_forcelist=[500, 502, 503, 504],  # Códigos de erro para retry
+        allowed_methods=["GET"]
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+
+    print("Consultando a API...")
+    response = session.get(url, headers={"accept": "application/json"}, timeout=10, verify=False)
+    response.raise_for_status()  # Levanta erro se status não for 2xx
+    print("Consulta à API concluída com sucesso!")
+    return response.json()
 
 def limpar_tabelas(request):
     """Remove todas as tabelas cujo nome começa com 'consulta_'."""
@@ -236,3 +301,58 @@ def limpar_tabelas(request):
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
     return JsonResponse({'success': False, 'message': 'Método inválido!'})
+
+@csrf_exempt
+def adicionar_item(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            tabela = data.get('tabela')
+            novo_item = data.get('data')
+
+            with connection.cursor() as cursor:
+                # Substitua pela lógica de inserção correta
+                cursor.execute(
+                    f"INSERT INTO {tabela} ({', '.join(novo_item.keys())}) VALUES ({', '.join(['%s'] * len(novo_item))})",
+                    list(novo_item.values())
+                )
+            return JsonResponse({'success': True, 'message': 'Item adicionado com sucesso.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+@csrf_exempt
+def excluir_item(request, tabela, item_id):
+    if request.method == 'DELETE':
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(f"DELETE FROM {tabela} WHERE id = %s", [item_id])
+
+            return JsonResponse({'success': True, 'message': 'Item excluído com sucesso.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+def gerar_tabela(request):
+    if request.method == 'GET':
+        try:
+            tabela = request.GET.get('tabela')
+
+            with connection.cursor() as cursor:
+                cursor.execute(f"SELECT * FROM {tabela}")
+                rows = cursor.fetchall()
+
+            return JsonResponse({'success': True, 'data': rows})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+def controlar_itens(request):
+    if request.method == 'GET':
+        try:
+            tabela = request.GET.get('tabela')
+
+            with connection.cursor() as cursor:
+                cursor.execute(f"SELECT * FROM {tabela}")
+                rows = cursor.fetchall()
+
+            return JsonResponse({'success': True, 'data': rows})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})            
