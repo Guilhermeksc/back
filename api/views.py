@@ -286,4 +286,4 @@ def limpar_tabelas(request):
                 return JsonResponse({'success': True, 'message': f"{len(tabelas)} tabelas removidas com sucesso!"})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
-    return JsonResponse({'success': False, 'message': 'Método inválido!'})
+    return JsonResponse({'success': False, 'message': 'Método inválido!'})                                                                                                      
