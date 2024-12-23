@@ -37,6 +37,31 @@ def register_user(name, email, password):
         )
         ProfileManager.send_validation_email(user)
 
+class SendPasswordResetLinkView(View):
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return JsonResponse({'error': 'E-mail é obrigatório.'}, status=400)
+
+        try:
+            user = User.objects.get(email=email)
+            token = get_random_string(length=32)
+            user.profile.validation_token = token  # Salve o token no Profile
+            user.profile.save()
+
+            reset_url = f"http://localhost:4200/reset-password/{token}/"
+
+            send_mail(
+                'Redefinição de Senha',
+                f'Clique no link para redefinir sua senha: {reset_url}',
+                'no-reply@licitacao360.com',
+                [email],
+                fail_silently=False,
+            )
+            return JsonResponse({'message': 'Um link foi enviado para o e-mail fornecido.'}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Usuário com este e-mail não encontrado.'}, status=404)
+        
 class ResetPasswordView(View):
     def post(self, request, token):
         password = request.data.get('password')
@@ -372,15 +397,11 @@ def consulta_api(request):
 
         # Retornar lista de tabelas disponíveis
         return JsonResponse({'success': True, 'tables': get_table_list()})
-<<<<<<< HEAD
-=======
 
     logger.warning("Método não permitido: %s", request.method)
     return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
->>>>>>> recovery-branch
 
-    logger.warning("Método não permitido: %s", request.method)
-    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+
 
 # Função para buscar dados da API com retry
 def get_api_data(url):
@@ -419,63 +440,4 @@ def limpar_tabelas(request):
                 return JsonResponse({'success': True, 'message': f"{len(tabelas)} tabelas removidas com sucesso!"})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
-<<<<<<< HEAD
     return JsonResponse({'success': False, 'message': 'Método inválido!'})
-
-@csrf_exempt
-def adicionar_item(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            tabela = data.get('tabela')
-            novo_item = data.get('data')
-
-            with connection.cursor() as cursor:
-                # Substitua pela lógica de inserção correta
-                cursor.execute(
-                    f"INSERT INTO {tabela} ({', '.join(novo_item.keys())}) VALUES ({', '.join(['%s'] * len(novo_item))})",
-                    list(novo_item.values())
-                )
-            return JsonResponse({'success': True, 'message': 'Item adicionado com sucesso.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-
-@csrf_exempt
-def excluir_item(request, tabela, item_id):
-    if request.method == 'DELETE':
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute(f"DELETE FROM {tabela} WHERE id = %s", [item_id])
-
-            return JsonResponse({'success': True, 'message': 'Item excluído com sucesso.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-
-def gerar_tabela(request):
-    if request.method == 'GET':
-        try:
-            tabela = request.GET.get('tabela')
-
-            with connection.cursor() as cursor:
-                cursor.execute(f"SELECT * FROM {tabela}")
-                rows = cursor.fetchall()
-
-            return JsonResponse({'success': True, 'data': rows})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
-
-def controlar_itens(request):
-    if request.method == 'GET':
-        try:
-            tabela = request.GET.get('tabela')
-
-            with connection.cursor() as cursor:
-                cursor.execute(f"SELECT * FROM {tabela}")
-                rows = cursor.fetchall()
-
-            return JsonResponse({'success': True, 'data': rows})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})            
-=======
-    return JsonResponse({'success': False, 'message': 'Método inválido!'})                                                                                                      
->>>>>>> recovery-branch
