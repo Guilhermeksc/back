@@ -1,3 +1,7 @@
 cp -r ../frontend/dist/frontend/browser/* ./static/ 
 
 python manage.py makemigrations      
+
+@Licitacao360.1000
+
+python manage.py reset_users  

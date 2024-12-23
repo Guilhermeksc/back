@@ -11,6 +11,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
+try:
+    from .email_settings import *
+except ImportError:
+    print("Arquivo de configurações de e-mail não encontrado.")
+    
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-le-fmd9xx5e@o0s3c5x)6a2!8v7o5cj!qsrjzkr$g%stt5#6do'
 
@@ -43,6 +48,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',    
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',    
@@ -143,8 +150,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Backend padrão
-    'api.authentication.EmailBackend',       # Backend customizado
+    'api.authentication.ActiveUserBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 SIMPLE_JWT = {

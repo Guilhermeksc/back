@@ -10,6 +10,80 @@ from django.http import Http404
 from django.conf import settings
 import os
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from rest_framework import status
+from django.shortcuts import render
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.http import JsonResponse
+from django.views import View
+from .profile_manager import ProfileManager
+from django.db import transaction
+
+def register_user(name, email, password):
+    with transaction.atomic():
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=name,
+            is_active=False  # Usuário inativo até validar o e-mail
+        )
+        ProfileManager.send_validation_email(user)
+
+class ResetPasswordView(View):
+    def post(self, request, token):
+        password = request.data.get('password')
+        if not password:
+            return JsonResponse({'error': 'Senha é obrigatória.'}, status=400)
+
+        try:
+            profile = Profile.objects.get(validation_token=token)
+            user = profile.user
+            user.set_password(password)
+            user.save()
+
+            profile.validation_token = None  # Invalida o token após uso
+            profile.save()
+
+            return JsonResponse({'message': 'Senha redefinida com sucesso!'}, status=200)
+        except Profile.DoesNotExist:
+            return JsonResponse({'error': 'Token inválido ou expirado.'}, status=400)
+
+class PasswordResetView(APIView):
+    permission_classes = [AllowAny]  # Permite acesso público
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return JsonResponse({'error': 'E-mail é obrigatório.'}, status=400)
+
+        try:
+            user = User.objects.get(email=email)
+            token = get_random_string(length=32)
+            user.profile.validation_token = token  # Salve o token no Profile
+            user.profile.save()
+
+            reset_url = f"http://localhost:4200/reset-password/{token}/"
+
+            send_mail(
+                'Redefinição de Senha',
+                f'Clique no link para redefinir sua senha: {reset_url}',
+                'no-reply@licitacao360.com',
+                [email],
+                fail_silently=False,
+            )
+            return JsonResponse({'message': 'Um link foi enviado para o e-mail fornecido.'}, status=200)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Usuário com este e-mail não encontrado.'}, status=404)
+def index(request):
+    return render(request, 'index.html') 
 
 class FrontendAppView(TemplateView):
     template_name = "index.html"  # Agora aponta diretamente para 'index.html' em 'static'
@@ -22,27 +96,65 @@ class FrontendAppView(TemplateView):
         return super().get(request, *args, **kwargs)
 
 logger = logging.getLogger(__name__)
+
+class ValidateEmailView(View):
+    def get(self, request, token):
+        if ProfileManager.validate_email_token(token):
+            return JsonResponse({"message": "E-mail validado com sucesso!"}, status=200)
+        return JsonResponse({"error": "Token inválido ou expirado."}, status=400)
+
+from django.db import transaction, IntegrityError
+
 class RegisterView(APIView):
-    permission_classes = [AllowAny]  # Permite acesso sem autenticação
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        username = request.data.get('name')
+        name = request.data.get('name')
         email = request.data.get('email')
         password = request.data.get('password')
-        logger.info("Dados recebidos para registro: %s", {"username": username, "email": email})
 
-        if User.objects.filter(username=username).exists():
-            logger.warning("Usuário já existe: %s", username)
-            return Response({'detail': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        if not name or not email or not password:
+            return Response({"error": "Todos os campos são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.save()
-        logger.info("Usuário criado com sucesso: %s", {"username": username, "email": email})
-        return Response({'detail': 'User created successfully'}, status=status.HTTP_201_CREATED)
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "Este e-mail já está registrado."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():
+                # Criar o usuário inativo
+                user = User.objects.create_user(
+                    username=email, email=email, password=password, first_name=name, is_active=False
+                )
+
+                # Gerar token único
+                token = get_random_string(length=32)
+
+                # Salvar o token no perfil
+                user.profile.validation_token = token
+                user.profile.save()
+
+                # Enviar o e-mail de validação
+                validation_url = f"http://localhost:4200/validate-email/{token}"
+                send_mail(
+                    subject="Valide seu registro",
+                    message=f"Por favor, clique no link para validar seu registro: {validation_url}",
+                    from_email="no-reply@licitacao360.com",
+                    recipient_list=[email],
+                )
+
+            return Response({"message": "Usuário registrado com sucesso. Verifique seu e-mail para validar."}, status=status.HTTP_201_CREATED)
+
+        except IntegrityError:
+            return Response({"error": "Erro ao salvar o usuário no banco de dados."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({"error": f"Erro no registro: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LoginView(APIView):
-    permission_classes = [AllowAny]  # Permite acesso sem autenticação
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"detail": "Use POST to send email and password."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def post(self, request):
         logger.info("Dados recebidos: %s", request.data)
@@ -65,6 +177,7 @@ class LoginView(APIView):
 
         logger.warning("Credenciais inválidas para: %s", email)
         return Response({'detail': 'Credenciais inválidas.'}, status=status.HTTP_401_UNAUTHORIZED)
+
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -259,6 +372,12 @@ def consulta_api(request):
 
         # Retornar lista de tabelas disponíveis
         return JsonResponse({'success': True, 'tables': get_table_list()})
+<<<<<<< HEAD
+=======
+
+    logger.warning("Método não permitido: %s", request.method)
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
+>>>>>>> recovery-branch
 
     logger.warning("Método não permitido: %s", request.method)
     return JsonResponse({'success': False, 'message': 'Método não permitido.'}, status=405)
@@ -300,6 +419,7 @@ def limpar_tabelas(request):
                 return JsonResponse({'success': True, 'message': f"{len(tabelas)} tabelas removidas com sucesso!"})
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)})
+<<<<<<< HEAD
     return JsonResponse({'success': False, 'message': 'Método inválido!'})
 
 @csrf_exempt
@@ -356,3 +476,6 @@ def controlar_itens(request):
             return JsonResponse({'success': True, 'data': rows})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})            
+=======
+    return JsonResponse({'success': False, 'message': 'Método inválido!'})                                                                                                      
+>>>>>>> recovery-branch
