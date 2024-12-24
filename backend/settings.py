@@ -57,7 +57,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # Adicione aqui
+    'corsheaders.middleware.CorsMiddleware',  # Deve estar no topo
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',       
@@ -77,7 +77,6 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',
     'https://www.licitacao360.com',
     'https://licitacao360.com',
 ]
@@ -86,7 +85,11 @@ CORS_ALLOW_HEADERS = [
     "content-type",
     "authorization",
     "x-requested-with",
+    "accept",
+    "origin",
+    "x-csrftoken",
 ]
+
 
 CORS_ALLOW_METHODS = [
     "GET",
