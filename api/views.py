@@ -50,7 +50,7 @@ class SendPasswordResetLinkView(View):
             user.profile.validation_token = token  # Salve o token no Profile
             user.profile.save()
 
-            reset_url = f"http://localhost:4200/reset-password/{token}/"
+            reset_url = f"https://www.licitacao360.com/reset-password/{token}/"
 
             send_mail(
                 'Redefinição de Senha',

@@ -6,17 +6,12 @@ from datetime import timedelta
 from pathlib import Path
 import os
 
-# Determinar o ambiente (produção ou desenvolvimento)
-ENVIRONMENT = os.getenv('DJANGO_ENV', 'development')
-
-if ENVIRONMENT == 'production':
-    FRONTEND_BASE_URL = "https://www.licitacao360.com"
-else:
-    FRONTEND_BASE_URL = "https://www.licitacao360.com"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-print(f"FRONTEND_BASE_URL is set to: {FRONTEND_BASE_URL}")
+
+FRONTEND_BASE_URL = "https://www.licitacao360.com"
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -29,12 +24,12 @@ except ImportError:
 SECRET_KEY = 'django-insecure-le-fmd9xx5e@o0s3c5x)6a2!8v7o5cj!qsrjzkr$g%stt5#6do'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = [
-    'localhost', 
-    '127.0.0.1', 
+    # 'localhost', 
+    # '127.0.0.1', 
     'licitacao360.com', 
     'www.licitacao360.com', 
     'ayabioarquitetura.com', 
@@ -66,14 +61,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False
+# CORS_ALLOW_ALL_ORIGINS = False
 
 # CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     'https://www.licitacao360.com',
-    'https://licitacao360.com',
 ]
+
 CORS_ALLOW_HEADERS = [
     "content-type",
     "authorization",
