@@ -67,26 +67,28 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_CREDENTIALS = True
 
-# CORS_ALLOWED_ORIGINS = [
-#     'https://www.licitacao360.com',
-#     'https://licitacao360.com',
-# ]
-
+CORS_ALLOWED_ORIGINS = [
+    'https://www.licitacao360.com',
+    'https://licitacao360.com',
+]
 CORS_ALLOW_HEADERS = [
     "content-type",
     "authorization",
     "x-requested-with",
     "accept",
     "origin",
+    "x-csrftoken",
 ]
 
 CORS_ALLOW_METHODS = [
     "GET",
     "POST",
+    "PUT",
+    "DELETE",
     "OPTIONS",
 ]
 

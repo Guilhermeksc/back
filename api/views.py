@@ -126,11 +126,11 @@ class RegisterView(APIView):
 
         # Verificando campos obrigatórios
         if not name or not email or not password:
-            return self.create_response({"error": "Todos os campos são obrigatórios."}, status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Todos os campos são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Verificando se o e-mail já está registrado
         if User.objects.filter(email=email).exists():
-            return self.create_response({"error": "Este e-mail já está registrado."}, status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Este e-mail já está registrado."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             with transaction.atomic():
@@ -152,44 +152,32 @@ class RegisterView(APIView):
                 # Enviar e-mail de validação
                 send_mail(
                     subject="Valide seu registro",
-                    message=f"Por favor, clique no link para validar seu registro: {validation_url}",
+                    message=f"Por favor, clique no link para validar sua conta: {validation_url}",
                     from_email="no-reply@licitacao360.com",
                     recipient_list=[email],
                 )
 
             # Retornar sucesso
-            return self.create_response(
+            return Response(
                 {"message": "Usuário registrado com sucesso. Verifique seu e-mail para validar."},
-                status.HTTP_201_CREATED,
+                status=status.HTTP_201_CREATED,
             )
 
         except IntegrityError:
-            return self.create_response(
+            return Response(
                 {"error": "Erro ao salvar o usuário no banco de dados."},
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
         except Exception as e:
-            return self.create_response(
+            return Response(
                 {"error": f"Erro no registro: {str(e)}"},
-                status.HTTP_500_INTERNAL_SERVER_ERROR,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    def create_response(self, data, status_code):
-        """
-        Função para adicionar cabeçalhos CORS à resposta.
-        """
-        response = Response(data, status=status_code)
-        response["Access-Control-Allow-Origin"] = settings.FRONTEND_BASE_URL
-        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
-
     def options(self, request, *args, **kwargs):
-        response = Response(status=status.HTTP_200_OK)
-        response["Access-Control-Allow-Origin"] = "https://www.licitacao360.com"
-        response["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
-        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return response
+        # Apenas deixe o middleware lidar com CORS
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class LoginView(APIView):
