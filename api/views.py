@@ -184,6 +184,12 @@ class RegisterView(APIView):
         response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
         return response
 
+    def options(self, request, *args, **kwargs):
+        response = Response(status=status.HTTP_200_OK)
+        response["Access-Control-Allow-Origin"] = "https://www.licitacao360.com"
+        response["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
 
 
 class LoginView(APIView):

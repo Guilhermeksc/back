@@ -87,17 +87,12 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
     "accept",
     "origin",
-    "x-csrftoken",
 ]
-
 
 CORS_ALLOW_METHODS = [
     "GET",
     "POST",
-    "PUT",
-    "DELETE",
     "OPTIONS",
-    "PATCH",
 ]
 
 REST_FRAMEWORK = {
