@@ -25,6 +25,7 @@ from django.http import JsonResponse
 from django.views import View
 from .profile_manager import ProfileManager
 from django.db import transaction
+from rest_framework.permissions import IsAuthenticated
 
 def register_user(name, email, password):
     with transaction.atomic():
@@ -62,54 +63,36 @@ class SendPasswordResetLinkView(View):
         except User.DoesNotExist:
             return JsonResponse({'error': 'Usuário com este e-mail não encontrado.'}, status=404)
         
-class ResetPasswordView(View):
-    def post(self, request, token):
-        password = request.data.get('password')
-        if not password:
-            return JsonResponse({'error': 'Senha é obrigatória.'}, status=400)
-
-        try:
-            profile = Profile.objects.get(validation_token=token)
-            user = profile.user
-            user.set_password(password)
-            user.save()
-
-            profile.validation_token = None  # Invalida o token após uso
-            profile.save()
-
-            return JsonResponse({'message': 'Senha redefinida com sucesso!'}, status=200)
-        except Profile.DoesNotExist:
-            return JsonResponse({'error': 'Token inválido ou expirado.'}, status=400)
-
-class PasswordResetView(APIView):
-    permission_classes = [AllowAny]  # Permite acesso público
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        email = request.data.get('email')
-        if not email:
-            return JsonResponse({'error': 'E-mail é obrigatório.'}, status=400)
+        email = request.user.email  # Usuário autenticado
+        password = request.data.get('password')
+        print(f"Tentativa de login para: {email} com senha: {password}")
+        new_password = request.data.get('newPassword')
+
+        if not email or not current_password or not new_password:
+            return Response({"error": "Todos os campos são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(email=email)
-            token = get_random_string(length=32)
-            user.profile.validation_token = token  # Salve o token no Profile
-            user.profile.save()
+            # Autenticar o usuário com e-mail e senha atual
+            user = authenticate(username=email, password=current_password)
+            if user is None:
+                return Response({"error": "Senha atual incorreta."}, status=status.HTTP_401_UNAUTHORIZED)
 
-            reset_url = f"http://localhost:4200/reset-password/{token}/"
+            # Atualiza para a nova senha
+            user.set_password(new_password)
+            user.save()
+            print(f"Senha alterada para o usuário: {user.email}")
 
-            send_mail(
-                'Redefinição de Senha',
-                f'Clique no link para redefinir sua senha: {reset_url}',
-                'no-reply@licitacao360.com',
-                [email],
-                fail_silently=False,
-            )
-            return JsonResponse({'message': 'Um link foi enviado para o e-mail fornecido.'}, status=200)
+            return Response({"message": "Senha alterada com sucesso."}, status=status.HTTP_200_OK)
+
         except User.DoesNotExist:
-            return JsonResponse({'error': 'Usuário com este e-mail não encontrado.'}, status=404)
+            return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        
 def index(request):
     return render(request, 'index.html') 
-
 class FrontendAppView(TemplateView):
     template_name = "index.html"  # Agora aponta diretamente para 'index.html' em 'static'
 
