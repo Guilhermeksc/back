@@ -2,6 +2,7 @@ import secrets
 from django.core.mail import send_mail
 from django.contrib.auth.models import User
 from .models import Profile
+from django.conf import settings
 
 class ProfileManager:
     @staticmethod
@@ -29,7 +30,7 @@ class ProfileManager:
         Envia um e-mail de validação para o usuário.
         """
         token = ProfileManager.generate_validation_token(user)
-        validation_url = f"http://localhost:8000/validate-email/{token}/"
+        validation_url = f"{settings.BASE_FRONTEND_URL}/validate-email/{token}/"
 
         send_mail(
             'Valide seu endereço de e-mail',
