@@ -9,11 +9,10 @@ import os
 # Determinar o ambiente (produção ou desenvolvimento)
 ENVIRONMENT = os.getenv('DJANGO_ENV', 'development')
 
-# URL base para o frontend
 if ENVIRONMENT == 'production':
     FRONTEND_BASE_URL = "https://www.licitacao360.com"
 else:
-    FRONTEND_BASE_URL = "http://localhost:4200"
+    FRONTEND_BASE_URL = "https://www.licitacao360.com"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
