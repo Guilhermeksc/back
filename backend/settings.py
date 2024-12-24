@@ -62,6 +62,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:4200',
     "https://www.licitacao360.com",
+    "https://licitacao360.com",
 ]
 
 CORS_ALLOWED_ORIGINS = [
