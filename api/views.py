@@ -147,7 +147,7 @@ class RegisterView(APIView):
                 user.profile.save()
 
                 # Construir URL para validação do e-mail
-                validation_url = f"{settings.FRONTEND_BASE_URL}/validate-email/{token}"
+                validation_url = f"https://www.licitacao360.com/validate-email/{token}"
 
                 # Enviar e-mail de validação
                 send_mail(
