@@ -1,9 +1,19 @@
 """
 Django settings for backend project.
 """
+
 from datetime import timedelta
 from pathlib import Path
 import os
+
+# Determinar o ambiente (produção ou desenvolvimento)
+ENVIRONMENT = os.getenv('DJANGO_ENV', 'development')
+
+# URL base para o frontend
+if ENVIRONMENT == 'production':
+    FRONTEND_BASE_URL = "https://www.licitacao360.com"
+else:
+    FRONTEND_BASE_URL = "http://localhost:4200"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,7 +67,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:4200',
@@ -83,6 +94,7 @@ CORS_ALLOW_METHODS = [
     "PUT",
     "DELETE",
     "OPTIONS",
+    "PATCH",
 ]
 
 REST_FRAMEWORK = {

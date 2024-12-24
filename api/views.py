@@ -113,19 +113,24 @@ class ValidateEmailView(View):
 
 from django.db import transaction, IntegrityError
 
+from django.conf import settings
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        # Obtendo os dados do POST
         name = request.data.get('name')
         email = request.data.get('email')
         password = request.data.get('password')
 
+        # Verificando campos obrigatórios
         if not name or not email or not password:
-            return Response({"error": "Todos os campos são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
+            return self.create_response({"error": "Todos os campos são obrigatórios."}, status.HTTP_400_BAD_REQUEST)
 
+        # Verificando se o e-mail já está registrado
         if User.objects.filter(email=email).exists():
-            return Response({"error": "Este e-mail já está registrado."}, status=status.HTTP_400_BAD_REQUEST)
+            return self.create_response({"error": "Este e-mail já está registrado."}, status.HTTP_400_BAD_REQUEST)
 
         try:
             with transaction.atomic():
@@ -137,12 +142,14 @@ class RegisterView(APIView):
                 # Gerar token único
                 token = get_random_string(length=32)
 
-                # Salvar o token no perfil
+                # Salvar o token no perfil do usuário
                 user.profile.validation_token = token
                 user.profile.save()
 
-                # Enviar o e-mail de validação
-                validation_url = f"http://localhost:4200/validate-email/{token}"
+                # Construir URL para validação do e-mail
+                validation_url = f"{settings.FRONTEND_BASE_URL}/validate-email/{token}"
+
+                # Enviar e-mail de validação
                 send_mail(
                     subject="Valide seu registro",
                     message=f"Por favor, clique no link para validar seu registro: {validation_url}",
@@ -150,12 +157,33 @@ class RegisterView(APIView):
                     recipient_list=[email],
                 )
 
-            return Response({"message": "Usuário registrado com sucesso. Verifique seu e-mail para validar."}, status=status.HTTP_201_CREATED)
+            # Retornar sucesso
+            return self.create_response(
+                {"message": "Usuário registrado com sucesso. Verifique seu e-mail para validar."},
+                status.HTTP_201_CREATED,
+            )
 
         except IntegrityError:
-            return Response({"error": "Erro ao salvar o usuário no banco de dados."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return self.create_response(
+                {"error": "Erro ao salvar o usuário no banco de dados."},
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         except Exception as e:
-            return Response({"error": f"Erro no registro: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return self.create_response(
+                {"error": f"Erro no registro: {str(e)}"},
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def create_response(self, data, status_code):
+        """
+        Função para adicionar cabeçalhos CORS à resposta.
+        """
+        response = Response(data, status=status_code)
+        response["Access-Control-Allow-Origin"] = settings.FRONTEND_BASE_URL
+        response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        return response
+
 
 
 class LoginView(APIView):
