@@ -67,20 +67,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:4200',
-    "https://www.licitacao360.com",
-    "https://licitacao360.com",
-]
-
-CORS_ALLOWED_ORIGINS = [
-    'https://www.licitacao360.com',
-    'https://licitacao360.com',
-]
+# CORS_ALLOWED_ORIGINS = [
+#     'https://www.licitacao360.com',
+#     'https://licitacao360.com',
+# ]
 
 CORS_ALLOW_HEADERS = [
     "content-type",
