@@ -30,7 +30,7 @@ class ProfileManager:
         Envia um e-mail de validação para o usuário.
         """
         token = ProfileManager.generate_validation_token(user)
-        validation_url = f"{settings.BASE_FRONTEND_URL}/validate-email/{token}/"
+        validation_url = f"https://www.licitacao360.com/validate-email/{token}/"
 
         send_mail(
             'Valide seu endereço de e-mail',
