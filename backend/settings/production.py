@@ -8,7 +8,7 @@ BASE_URL = "https://www.licitacao360.com"
 
 SECRET_KEY = "8v#+9z%j6_(&o94so)pvr0x^v!5a(c2dy$73+0#_5!1is&)(mr"
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
