@@ -23,10 +23,11 @@ DATABASES = {
         'NAME': os.getenv("DB_NAME", "licitacao360"),
         'USER': os.getenv("DB_USER", "postgres"),
         'PASSWORD': os.getenv("DB_PASSWORD", "@Licitacao360.1000"),
-        'HOST': os.getenv("DB_HOST", "localhost"),
-        'PORT': os.getenv("DB_PORT", "5432"),
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
+
 
 SECURE_SSL_REDIRECT = True
 CSRF_COOKIE_SECURE = True
