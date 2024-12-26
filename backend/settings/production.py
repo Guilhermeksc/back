@@ -14,6 +14,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.licitacao360.com",
 ]
 
+CORS_ALLOW_CREDENTIALS = True  # Permitir credenciais
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

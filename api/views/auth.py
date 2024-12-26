@@ -28,16 +28,15 @@ class RegisterView(APIView):
                 user = User.objects.create_user(
                     username=email, email=email, password=password, first_name=name, is_active=False
                 )
-                token = get_random_string(length=64)  # Gere o token
-                user.profile.validation_token = token  # Salve no perfil
+                token = get_random_string(length=64)  # Certifique-se de usar length=64
+                user.profile.validation_token = token
                 user.profile.save()
 
-                # Use a BASE_URL das configurações
+                # Use settings.BASE_URL para gerar a URL corretamente
                 validation_url = f"{settings.BASE_URL}/api/validate-email/{token}"
                 
-                # Adicione prints para depuração
-                print(f"Token gerado: {token}")  # Exibe o token gerado no terminal
-                print(f"URL de validação: {validation_url}")  # Exibe a URL gerada
+                print(f"Token gerado: {token}")  # Log para verificar o token
+                print(f"URL de validação: {validation_url}")  # Log para verificar a URL
 
                 send_mail(
                     subject="Valide seu registro",
