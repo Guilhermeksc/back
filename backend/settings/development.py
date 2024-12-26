@@ -14,9 +14,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
 ]
 
-INSTALLED_APPS += [
-    'debug_toolbar',
-]
+INSTALLED_APPS += ['debug_toolbar']
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # Deve estar no topo
@@ -31,7 +30,7 @@ MIDDLEWARE = [
 ]
 
 DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': lambda request: request.headers.get('X-Requested-With') != 'XMLHttpRequest' and not request.path.startswith('/api/') and not request.path.startswith('/validate-email/'),
+    'SHOW_TOOLBAR_CALLBACK': lambda request: not request.is_ajax() and not request.path.startswith('/api/')
 }
 
 INTERNAL_IPS = [
