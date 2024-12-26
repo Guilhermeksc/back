@@ -18,8 +18,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv("DB_NAME", "licitacao360"),
-        'USER': os.getenv("DB_USER", "prod_user"),
-        'PASSWORD': os.getenv("DB_PASSWORD", "prod_password"),
+        'USER': os.getenv("DB_USER", "postgres"),
+        'PASSWORD': os.getenv("DB_PASSWORD", "@Licitacao360.1000"),
         'HOST': os.getenv("DB_HOST", "localhost"),
         'PORT': os.getenv("DB_PORT", "5432"),
     }
