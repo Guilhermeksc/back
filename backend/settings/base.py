@@ -11,7 +11,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "default-unsafe-secret-key")
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "licitacao360.com,www.licitacao360.com").split(",")
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',

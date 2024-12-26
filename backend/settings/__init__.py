@@ -1,6 +1,6 @@
 import os
 
-ENVIRONMENT = os.getenv("DJANGO_ENV", "development")  # Padrão: desenvolvimento
+ENVIRONMENT = os.getenv("DJANGO_ENV", "production")  # Padrão: desenvolvimento
 
 if ENVIRONMENT == "production":
     from .production import *
