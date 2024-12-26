@@ -6,4 +6,5 @@ class ApiConfig(AppConfig):
     name = 'api'
 
     def ready(self):
-        import api.signals
+        import api.signals  # Certifique-se de que 'api.signals' existe
+        # Não manipule diretamente User ou outros modelos aqui
