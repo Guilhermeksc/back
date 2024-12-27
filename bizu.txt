@@ -1,7 +1,14 @@
 cp -r ../frontend/dist/frontend/browser/* ./static/ 
 
-python manage.py makemigrations      
+python manage.py makemigrations   
+python manage.py migrate   
 
 @Licitacao360.1000
 
 python manage.py reset_users  
+
+testedjango
+
+licitacao360django@gmail.com
+
+celery -A backend worker --loglevel=info --pool=solo

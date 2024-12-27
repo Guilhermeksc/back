@@ -3,15 +3,32 @@ from datetime import timedelta
 from pathlib import Path
 import os
 
-CURRENT_ENVIRONMENT = "Base"
-
+# Caminho base
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.getenv("SECRET_KEY", "default-unsafe-secret-key")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+    
+# Carregar .env
+env_path = BASE_DIR / ".env"
+if env_path.exists():
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            key, value = line.split("=", 1)
+            os.environ[key] = value
+            
+SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key")  # Use variável de ambiente para segurança
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
-DEBUG = False
-
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",  # URL do frontend
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200",  # URL confiável para CSRF
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -22,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    'corsheaders',
+    'rest_framework_simplejwt.token_blacklist',
+    'corsheaders', 
     'api',
 ]
 
@@ -68,6 +86,7 @@ DATABASES = {
     }
 }
 
+# Configurações de autenticação
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -83,6 +102,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Idioma e fuso horário
+LANGUAGE_CODE = 'pt-br'
+TIME_ZONE = 'America/Sao_Paulo'
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Backend padrão
     'api.authentication.ActiveUserBackend',       # Backend customizado para email
@@ -95,12 +121,9 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'TOKEN_OBTAIN_SERIALIZER': 'api.views.serializer.CustomTokenObtainPairSerializer',
 }
 
-LANGUAGE_CODE = 'pt-br'
-TIME_ZONE = 'America/Sao_Paulo'
-USE_I18N = True
-USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
@@ -118,3 +141,10 @@ EMAIL_HOST_PASSWORD = 'ozuj yjpf hweb prwk'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Usa o banco de dados para sessões
 SESSION_COOKIE_SECURE = False  # Ajuste para True em produção com HTTPS
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Sessões expiram ao fechar o navegador
+
+
+# Configuração do Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # URL do Redis
+CELERY_ACCEPT_CONTENT = ['json']  # Aceita apenas mensagens no formato JSON
+CELERY_TASK_SERIALIZER = 'json'  # Serializa tarefas como JSON
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Backend para armazenar resultados

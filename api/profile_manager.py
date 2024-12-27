@@ -30,19 +30,24 @@ class ProfileManager:
         """
         Envia um e-mail de validação para o usuário.
         """
-        token = ProfileManager.generate_validation_token(user)
-        validation_url = f"{settings.BASE_URL}/api/validate-email/{token}/"
+        try:
+            token = ProfileManager.generate_validation_token(user)
+            validation_url = f"{settings.BASE_URL}/api/validate-email/{token}/"
+            send_mail(
+                'Valide seu endereço de e-mail',
+                f'Clique no link para validar sua conta: {validation_url}',
+                'no-reply@licitacao360.com',
+                [user.email],
+                fail_silently=False,
+            )
+            logger.info(f"E-mail de validação enviado para {user.email}.")
+        except Exception as e:
+            logger.error(f"Erro ao enviar e-mail para {user.email}: {str(e)}")
+            raise
 
-        send_mail(
-            'Valide seu endereço de e-mail',
-            f'Clique no link para validar sua conta: {validation_url}',
-            'no-reply@licitacao360.com',
-            [user.email],
-            fail_silently=False,
-        )
 
     @staticmethod
-    def validate_email_token(token: str) -> bool:
+    def validate_email_token(token: str) -> dict:
         """
         Valida o token de e-mail e ativa o usuário, se válido.
         """
@@ -52,6 +57,8 @@ class ProfileManager:
             profile.user.save()
             profile.validation_token = None
             profile.save()
-            return True
+            logger.info(f"Token validado com sucesso para o usuário {profile.user.email}.")
+            return {"success": True, "message": "E-mail validado com sucesso!"}
         except Profile.DoesNotExist:
-            return False
+            logger.warning(f"Token inválido ou expirado: {token}.")
+            return {"success": False, "message": "Token inválido ou expirado."}

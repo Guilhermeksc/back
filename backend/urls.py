@@ -14,9 +14,10 @@ from api.views.frontend import FrontendAppView, index
 from django.urls import include, path
 
 urlpatterns = [
-    path('api/', include('api.urls')),
     path('admin/', admin.site.urls),
+    path('api/', include('api.urls')), 
 ]
-
+    
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    import debug_toolbar
+    urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]    
