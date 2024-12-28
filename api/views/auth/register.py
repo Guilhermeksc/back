@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils.crypto import get_random_string
-from api.management.task import send_validation_email, send_reset_password_email
+from api.management.task import send_validation_email
 from rest_framework import status
 import time
 import logging
