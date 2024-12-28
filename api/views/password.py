@@ -6,6 +6,14 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 
 
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 class SendPasswordResetLinkView(APIView):
     def post(self, request):
         email = request.data.get('email')
@@ -32,19 +40,28 @@ class SendPasswordResetLinkView(APIView):
 
 
 class ChangePasswordView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        current_password = request.data.get('password')
+        print("Headers recebidos:", request.headers)  # Log para depuração
+        print("Usuário autenticado:", request.user)  # Verifica o usuário autenticado
+
+        email = request.data.get('email')
+        current_password = request.data.get('currentPassword')
         new_password = request.data.get('newPassword')
 
-        if not current_password or not new_password:
-            return Response({"error": "Todos os campos são obrigatórios."}, status=400)
+        if not email or not current_password or not new_password:
+            return Response({"error": "Todos os campos são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = request.user
-        if not user.check_password(current_password):
-            return Response({"error": "Senha atual incorreta."}, status=401)
+        user = authenticate(username=email, password=current_password)
+        if not user:
+            return Response({"error": "Senha atual incorreta."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if current_password == new_password:
+            return Response({"error": "A nova senha não pode ser igual à senha atual."}, status=status.HTTP_400_BAD_REQUEST)
 
         user.set_password(new_password)
         user.save()
-        return Response({"message": "Senha alterada com sucesso."}, status=200)
+
+        return Response({"message": "Senha alterada com sucesso."}, status=status.HTTP_200_OK)

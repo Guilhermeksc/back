@@ -1,6 +1,11 @@
+# api/management/task.py
+
 from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 @shared_task
 def send_validation_email(email, validation_url):
@@ -13,3 +18,4 @@ def send_validation_email(email, validation_url):
         from_email=settings.EMAIL_HOST_USER,
         recipient_list=[email],
     )
+

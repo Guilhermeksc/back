@@ -7,6 +7,7 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:4200")
     
 # Carregar .env
 env_path = BASE_DIR / ".env"
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_results',
     'corsheaders', 
     'api',
 ]
