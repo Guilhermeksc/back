@@ -25,10 +25,14 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",")
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",  # URL do frontend
+    "http://localhost:4200",
+    "https://www.licitacao360.com",  # Permitir o domínio com "www"
+    "https://licitacao360.com", 
 ]
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:4200",  # URL confiável para CSRF
+    "http://localhost:4200", 
+    "https://www.licitacao360.com",  # Permitir o domínio com "www"
+    "https://licitacao360.com", 
 ]
 
 INSTALLED_APPS = [
