@@ -17,8 +17,8 @@ class LoginView(APIView):
         username = request.data.get('username')
         password = request.data.get('password')
 
-        # Adicione logs para depuração
-        print("Dados recebidos no POST:", request.data)
+        # Log para depuração
+        print("DEBUG: Dados recebidos no POST:", request.data)
 
         if not username or not password:
             return Response({'detail': 'Username e senha são obrigatórios.'}, status=400)
@@ -29,14 +29,19 @@ class LoginView(APIView):
             # Gera o token JWT
             refresh = RefreshToken.for_user(user)
 
+            # Verifica o campo UASG
+            uasg = getattr(user.profile, 'uasg', None)  # Garante que o campo existe
+            print(f"DEBUG: UASG para o usuário {user.username}: {uasg}")  # Log do UASG
+
             # Retorna os dados necessários para o frontend
             user_data = {
                 "token": str(refresh.access_token),
                 "username": user.email,  # Substituído para retornar o e-mail
                 "is_active": user.is_active,  # Adicionado para incluir o estado de ativação
+                "uasg": uasg,  # Incluído o campo UASG
             }
 
             return Response(user_data, status=200)
-        
+
         # Retorna uma resposta caso as credenciais sejam inválidas
         return Response({'detail': 'Credenciais inválidas.'}, status=401)

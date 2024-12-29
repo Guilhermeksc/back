@@ -11,4 +11,15 @@ testedjango
 
 licitacao360django@gmail.com
 
+#producao
 celery -A backend worker --loglevel=info --pool=solo
+
+
+#teste
+celery -A backend worker --pool=solo --loglevel=info
+
+
+{ 
+"username": "guilhermekscampos@gmail.com",
+"password": "marinha"
+}
