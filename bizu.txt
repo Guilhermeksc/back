@@ -23,3 +23,10 @@ celery -A backend worker --pool=solo --loglevel=info
 "username": "guilhermekscampos@gmail.com",
 "password": "marinha"
 }
+
+
+psql -U postgres -d licitacao360
+
+@Licitacao360.1000
+
+ DROP TABLE controle_787000;

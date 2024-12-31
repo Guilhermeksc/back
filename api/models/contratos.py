@@ -1,15 +1,6 @@
 # api/models.py
 
-from django.contrib.auth.models import User
 from django.db import models
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    validation_token = models.CharField(max_length=64, blank=True, null=True)
-    reset_password_token = models.CharField(max_length=64, null=True, blank=True)  # Novo campo
-    uasg = models.CharField(max_length=20, blank=True, null=True)
-    def __str__(self):
-        return f"Perfil de {self.user.email}"
 
 class ControleContratos(models.Model):
     uasg = models.CharField(max_length=10, default="000000", verbose_name="UASG")
@@ -44,14 +35,23 @@ class ControleContratos(models.Model):
     fornecedor_cnpj = models.CharField(max_length=18, verbose_name="CNPJ do Fornecedor")
 
     # Informações da contratante
+    codigo_orgao = models.CharField(max_length=50, null=True, blank=True, verbose_name="Código do Órgão")
     orgao_nome = models.CharField(max_length=255, verbose_name="Órgão Contratante")
+    uasg = models.CharField(max_length=20, null=True, blank=True, verbose_name="UASG")
+    sigla_uasg = models.CharField(max_length=50, null=True, blank=True, verbose_name="Sigla da UASG")
     unidade_gestora = models.CharField(max_length=255, verbose_name="Unidade Gestora")
 
     # Links externos
-    link_historico = models.URLField(verbose_name="Link Histórico")
-    link_empenhos = models.URLField(verbose_name="Link Empenhos")
-    link_cronograma = models.URLField(verbose_name="Link Cronograma")
-    link_faturas = models.URLField(verbose_name="Link Faturas")
+    link_historico = models.URLField(null=True, blank=True, verbose_name="Link Histórico")
+    link_empenhos = models.URLField(null=True, blank=True, verbose_name="Link Empenhos")
+    link_garantias = models.URLField(null=True, blank=True, verbose_name="Link Garantias")
+    link_itens = models.URLField(null=True, blank=True, verbose_name="Link Itens")
+    link_prepostos = models.URLField(null=True, blank=True, verbose_name="Link Prepostos")
+    link_responsaveis = models.URLField(null=True, blank=True, verbose_name="Link Responsáveis")
+    link_faturas = models.URLField(null=True, blank=True, verbose_name="Link Faturas")
+    link_ocorrencias = models.URLField(null=True, blank=True, verbose_name="Link Ocorrências")
+    link_arquivos = models.URLField(null=True, blank=True, verbose_name="Link Arquivos")
+
 
     def __str__(self):
         return f"{self.numero} - {self.uasg} - {self.fornecedor_nome}"
@@ -96,7 +96,6 @@ def create_dynamic_model(uasg):
         'unidade_gestora': models.CharField(max_length=255),
         'link_historico': models.URLField(),
         'link_empenhos': models.URLField(),
-        'link_cronograma': models.URLField(),
         'link_faturas': models.URLField(),
     }
 

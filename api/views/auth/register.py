@@ -8,10 +8,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils.crypto import get_random_string
-from api.management.task import send_validation_email
 from rest_framework import status
 import time
 import logging
+from celery import shared_task
+from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -67,3 +68,19 @@ class RegisterView(APIView):
 def generate_token(user):
     refresh = RefreshToken.for_user(user)
     return str(refresh.access_token)
+
+
+logger = logging.getLogger(__name__)
+
+@shared_task
+def send_validation_email(email, validation_url):
+    """
+    Tarefa para enviar o e-mail de validação.
+    """
+    send_mail(
+        subject="Valide seu registro",
+        message=f"Por favor, clique no link para validar sua conta: {validation_url}",
+        from_email=settings.EMAIL_HOST_USER,
+        recipient_list=[email],
+    )
+

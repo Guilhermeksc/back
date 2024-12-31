@@ -1,33 +1,6 @@
 from django.contrib import admin
-from .models import ControleContratos
+from ..models import ControleContratos
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
-from .models import Profile
-
-class ProfileInline(admin.StackedInline):
-    model = Profile
-    can_delete = False
-    verbose_name_plural = "Perfil"
-    fields = ("uasg",)  # Apenas exibe o campo uasg
-
-class UserAdmin(BaseUserAdmin):
-    inlines = (ProfileInline,)
-    list_display = (
-        "username",
-        "email",
-        "first_name",
-        "last_name",
-        "is_staff",
-        "get_uasg",
-    )
-
-    def get_uasg(self, obj):
-        return obj.profile.uasg
-    get_uasg.short_description = "UASG"
-
-# Re-registre o modelo User com o novo UserAdmin
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
 
 @admin.register(ControleContratos)
 class ControleContratosAdmin(admin.ModelAdmin):
@@ -46,7 +19,7 @@ class ControleContratosAdmin(admin.ModelAdmin):
     )
     search_fields = ('numero', 'fornecedor_nome', 'fornecedor_cnpj', 'processo')
     list_filter = ('tipo', 'situacao', 'categoria', 'prorrogavel')
-    readonly_fields = ('link_historico', 'link_empenhos', 'link_cronograma', 'link_faturas')
+    readonly_fields = ('link_historico', 'link_empenhos', 'link_garantias', 'link_itens', 'link_prepostos', 'link_responsaveis', 'link_faturas', 'link_ocorrencias', 'link_arquivos',)
     ordering = ('data_assinatura',)
 
     fieldsets = (
@@ -82,7 +55,6 @@ class ControleContratosAdmin(admin.ModelAdmin):
             'fields': (
                 'link_historico',
                 'link_empenhos',
-                'link_cronograma',
                 'link_faturas',
             )
         }),
