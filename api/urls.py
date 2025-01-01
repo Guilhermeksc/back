@@ -1,12 +1,16 @@
 # api/urls.py
 
-from django.urls import path
+from django.urls import path, include
 from api.views.auth import *
 from api.views.email_validation import ValidateEmailView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .views import consulta_comprasnet_contratos, proxy_request
-from api.views.password import ChangePasswordView
-from .views import ComentariosAPIView
+from .views import consulta_comprasnet_contratos, proxy_download
+from .views import ComentariosAPIView, ControleProcessosViewSet, ChangePasswordView, ConsultaApiView
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'controle-processos', ControleProcessosViewSet, basename='controle-processos')
+router.register(r'planejamento', ControleProcessosViewSet, basename='planejamento')
 
 
 urlpatterns = [
@@ -21,5 +25,9 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('comentarios/', ComentariosAPIView.as_view(), name='comentarios'),
     path('comentarios/<int:pk>/', ComentariosAPIView.as_view(), name='comentarios-detail'),
-    path('proxy/<path:path>', proxy_request, name='proxy_request'),
+    path('proxy/contrato/<int:contrato_id>/arquivos/', proxy_download, name='proxy_download'),
+    path('consulta_api/', ConsultaApiView.as_view(), name='consulta_api'),
+
+
+    path('', include(router.urls)),  # Inclui automaticamente todas as rotas do router
 ]

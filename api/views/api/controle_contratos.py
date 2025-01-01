@@ -69,22 +69,26 @@ def deletar_tabela_uasg(uasg):
 from django.http import JsonResponse
 import requests
 
-def proxy_request(request, path):
-    # URL base da API remota
-    base_url = "https://contratos.comprasnet.gov.br/api/"
-    
-    # Concatena a URL completa
-    url = f"{base_url}{path}"
-    
+def proxy_download(request, contrato_id):
+    url = f"https://contratos.comprasnet.gov.br/api/contrato/{contrato_id}/arquivos"
     try:
-        # Realiza a requisição ao endpoint remoto
-        response = requests.get(url, headers={"accept": "application/json"}, timeout=10)
-        response.raise_for_status()  # Verifica se há erros HTTP
-        return JsonResponse(response.json(), safe=False)
-    except requests.exceptions.RequestException as e:
-        return JsonResponse({'error': f'Erro ao acessar {url}: {str(e)}'}, status=500)
+        # Faz a requisição ao endpoint externo
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        data = response.json()
 
+        # Verifica se há um path_arquivo nos dados retornados
+        if not data or not any("path_arquivo" in item for item in data):
+            return JsonResponse(
+                {'error': 'Nenhum arquivo disponível para download.'},
+                status=404
+            )
 
+        # Retorna os dados para o frontend
+        return JsonResponse(data, safe=False)
+
+    except requests.RequestException as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
         
 def consulta_comprasnet_contratos(request):
