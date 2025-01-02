@@ -1,18 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
-from ...models import ControleProcessos
-from ...serializer import ControleProcessosSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 import logging
 
 logger = logging.getLogger(__name__)
-class PlanejamentoListAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        data = ControleProcessos.objects.all()
-        serializer = ControleProcessosSerializer(data, many=True)
-        return Response({'data': serializer.data})
-    
 class ConsultaApiView(APIView):
     def get(self, request, *args, **kwargs):
         tabela = request.query_params.get('tabela')
@@ -23,11 +15,3 @@ class ConsultaApiView(APIView):
 
 import logging
 logger = logging.getLogger(__name__)
-
-class ControleProcessosViewSet(ModelViewSet):
-    queryset = ControleProcessos.objects.all()
-    serializer_class = ControleProcessosSerializer
-
-    def create(self, request, *args, **kwargs):
-        logger.info(f"Dados recebidos: {request.data}")
-        return super().create(request, *args, **kwargs)

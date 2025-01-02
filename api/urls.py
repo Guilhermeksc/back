@@ -5,12 +5,7 @@ from api.views.auth import *
 from api.views.email_validation import ValidateEmailView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import consulta_comprasnet_contratos, proxy_download
-from .views import ComentariosAPIView, ControleProcessosViewSet, ChangePasswordView, ConsultaApiView
-from rest_framework.routers import DefaultRouter
-
-router = DefaultRouter()
-router.register(r'controle-processos', ControleProcessosViewSet, basename='controle-processos')
-router.register(r'planejamento', ControleProcessosViewSet, basename='planejamento')
+from .views import ComentariosAPIView, ChangePasswordView, ConsultaApiView
 
 
 urlpatterns = [
@@ -28,6 +23,5 @@ urlpatterns = [
     path('proxy/contrato/<int:contrato_id>/arquivos/', proxy_download, name='proxy_download'),
     path('consulta_api/', ConsultaApiView.as_view(), name='consulta_api'),
 
-
-    path('', include(router.urls)),  # Inclui automaticamente todas as rotas do router
+    path('', include('app_planejamento.urls')),# Inclui automaticamente todas as rotas do router
 ]

@@ -3,6 +3,9 @@ cp -r ../frontend/dist/frontend/browser/* ./static/
 python manage.py makemigrations   
 python manage.py migrate   
 
+Get-ChildItem -Recurse -Include *.pyc | Remove-Item -Force
+Get-ChildItem -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+
 @Licitacao360.1000
 
 python manage.py reset_users  

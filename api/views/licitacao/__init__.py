@@ -1,1 +1,1 @@
-from .controle_licitacao import ControleProcessosViewSet, ConsultaApiView, PlanejamentoListAPIView
+from .controle_licitacao import ConsultaApiView

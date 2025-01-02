@@ -1,3 +1,5 @@
+# app_planejamento/models.py
+
 from django.db import models
 
 class ControleProcessos(models.Model):
@@ -56,3 +58,5 @@ class ControleProcessos(models.Model):
 
     def __str__(self):
         return f"{self.id_processo} - {self.objeto}"
+    class Meta:
+        db_table = "app_planejamento_controleprocessos" 
