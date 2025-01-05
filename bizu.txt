@@ -33,3 +33,6 @@ psql -U postgres -d licitacao360
 @Licitacao360.1000
 
  DROP TABLE controle_787000;
+
+
+ python manage.py runserver --verbosity 3

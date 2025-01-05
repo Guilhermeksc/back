@@ -7,7 +7,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import consulta_comprasnet_contratos, proxy_download
 from .views import ComentariosAPIView, ChangePasswordView, ConsultaApiView
 
-
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('register/', RegisterView.as_view(), name='register'),
@@ -23,5 +22,9 @@ urlpatterns = [
     path('proxy/contrato/<int:contrato_id>/arquivos/', proxy_download, name='proxy_download'),
     path('consulta_api/', ConsultaApiView.as_view(), name='consulta_api'),
 
-    path('', include('app_planejamento.urls')),# Inclui automaticamente todas as rotas do router
+    # Inclua todas as rotas do app_contratos em um namespace
+    path('comprasnet-contratos/', include('app_contratos.urls')),
+
+    # Inclui as rotas de planejamento
+    path('', include('app_planejamento.urls')),
 ]

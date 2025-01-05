@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'corsheaders', 
     'api',
     'app_planejamento',
+    'app_contratos',    
 ]
 
 MIDDLEWARE = [

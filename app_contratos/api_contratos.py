@@ -6,7 +6,8 @@ import requests
 from requests.adapters import HTTPAdapter, Retry
 import json
 from datetime import datetime
-from ...utils import parse_decimal, get_table_list
+from api.utils import parse_decimal, get_table_list
+from .save_model import salvar_dados_no_model
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ def proxy_download(request, contrato_id):
         return JsonResponse({'error': str(e)}, status=500)
 
         
-def consulta_comprasnet_contratos(request):
+def consulta_comprasnetcontratos(request):
     logger.info("Consulta recebida")
     uasg = request.GET.get('uasg')
     
@@ -99,114 +100,78 @@ def consulta_comprasnet_contratos(request):
         return JsonResponse({'success': False, 'message': 'Código UASG não fornecido.'}, status=400)
 
     try:
-        # URL da API externa
         api_url = f"https://contratos.comprasnet.gov.br/api/contrato/ug/{uasg}"
-
-        # Configurar sessão com retries
         session = requests.Session()
-        retry = Retry(
-            total=5,
-            backoff_factor=1,
-            status_forcelist=[500, 502, 503, 504],
-            allowed_methods=["GET"],
-        )
+        retry = Retry(total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504], allowed_methods=["GET"])
         adapter = HTTPAdapter(max_retries=retry)
         session.mount("https://", adapter)
 
         # Consulta à API externa
         response = session.get(api_url, headers={"accept": "application/json"}, timeout=10, verify=True)
 
-        logger.info(f"Status da API: {response.status_code}")
-        logger.info(f"Conteúdo da resposta: {response.text}")
-
         if response.status_code != 200:
+            logger.error(f"Erro na API externa: {response.status_code}")
             return JsonResponse({'success': False, 'message': f"Erro na API externa: {response.status_code}"}, status=500)
 
-        # Carregar JSON
         try:
             data = response.json()
         except json.JSONDecodeError:
+            logger.error("Erro ao processar resposta da API externa. JSON inválido.")
             return JsonResponse({'success': False, 'message': 'Erro ao processar resposta da API externa. JSON inválido.'}, status=500)
 
         if not data:
+            logger.warning("A API retornou uma resposta vazia.")
             return JsonResponse({'success': False, 'message': 'A API retornou uma resposta vazia.', 'data': []}, status=404)
 
-        # Processar contratos e retornar no campo `data`
+
+        # Processar contratos
         contratos = []
         for item in data:
-            contratos.append({
-                "id": item.get("id"),
-                "receita_despesa": item.get("receita_despesa"),
+            contrato = {
+                "uasg": uasg,
                 "numero": item.get("numero"),
-                
-                # Dados do contratante - orgao_origem
-                "orgao_origem_codigo": item.get("contratante", {}).get("orgao_origem", {}).get("codigo"),
-                "orgao_origem_nome": item.get("contratante", {}).get("orgao_origem", {}).get("nome"),
-                "unidade_gestora_origem_codigo": item.get("contratante", {}).get("orgao_origem", {}).get("unidade_gestora_origem", {}).get("codigo"),
-                "unidade_gestora_origem_nome_resumido": item.get("contratante", {}).get("orgao_origem", {}).get("unidade_gestora_origem", {}).get("nome_resumido"),
-                "unidade_gestora_origem_nome": item.get("contratante", {}).get("orgao_origem", {}).get("unidade_gestora_origem", {}).get("nome"),
-
-                # Dados do contratante - orgao
-                "orgao_codigo": item.get("contratante", {}).get("orgao", {}).get("codigo"),
-                "orgao_nome": item.get("contratante", {}).get("orgao", {}).get("nome"),
-                "unidade_gestora_codigo": item.get("contratante", {}).get("orgao", {}).get("unidade_gestora", {}).get("codigo"),
-                "unidade_gestora_nome_resumido": item.get("contratante", {}).get("orgao", {}).get("unidade_gestora", {}).get("nome_resumido"),
-                "unidade_gestora_nome": item.get("contratante", {}).get("orgao", {}).get("unidade_gestora", {}).get("nome"),
-
-                
-                # Dados do fornecedor
-                "fornecedor_cnpj_cpf_idgener": item.get("fornecedor", {}).get("cnpj_cpf_idgener"),
-                "fornecedor_nome": item.get("fornecedor", {}).get("nome"),
-        
-                "codigo_tipo": item.get("codigo_tipo"),
                 "tipo": item.get("tipo"),
+                "processo": item.get("processo"),
+                "receita_despesa": item.get("receita_despesa"),
                 "subtipo": item.get("subtipo"),
-                "prorrogavel": item.get("prorrogavel"),
+                "objeto": item.get("objeto"),
                 "situacao": item.get("situacao"),
-                "justificativa_inativo": item.get("justificativa_inativo"),
+                "prorrogavel": item.get("prorrogavel"),
                 "categoria": item.get("categoria"),
                 "subcategoria": item.get("subcategoria"),
-                "unidades_requisitantes": item.get("unidades_requisitantes"),
-                "processo": item.get("processo"),
-                "objeto": item.get("objeto"),
-                "amparo_legal": item.get("amparo_legal"),
-                "informacao_complementar": item.get("informacao_complementar"),
-                "codigo_modalidade": item.get("codigo_modalidade"),
-                "modalidade": item.get("modalidade"),
-                "unidade_compra": item.get("unidade_compra"),
-                "licitacao_numero": item.get("licitacao_numero"),
-                "sistema_origem_licitacao": item.get("sistema_origem_licitacao"),
                 "data_assinatura": item.get("data_assinatura"),
                 "data_publicacao": item.get("data_publicacao"),
-                "data_proposta_comercial": item.get("data_proposta_comercial"),
                 "vigencia_inicio": item.get("vigencia_inicio"),
                 "vigencia_fim": item.get("vigencia_fim"),
                 "valor_inicial": item.get("valor_inicial"),
                 "valor_global": item.get("valor_global"),
-                "num_parcelas": item.get("num_parcelas"),
-                "valor_parcela": item.get("valor_parcela"),
-                "valor_acumulado": item.get("valor_acumulado"),
-
-                # Links
+                "fornecedor_nome": item.get("fornecedor", {}).get("nome"),
+                "fornecedor_cnpj": item.get("fornecedor", {}).get("cnpj_cpf_idgener"),
+                "codigo_orgao": item.get("contratante", {}).get("orgao", {}).get("codigo"),
+                "orgao_nome": item.get("contratante", {}).get("orgao", {}).get("nome"),
+                "sigla_uasg": item.get("contratante", {}).get("sigla"),
+                "unidade_gestora": item.get("contratante", {}).get("orgao", {}).get("unidade_gestora", {}).get("nome"),
                 "link_historico": item.get("links", {}).get("historico"),
                 "link_empenhos": item.get("links", {}).get("empenhos"),
-                "link_cronograma": item.get("links", {}).get("cronograma"),
                 "link_garantias": item.get("links", {}).get("garantias"),
                 "link_itens": item.get("links", {}).get("itens"),
                 "link_prepostos": item.get("links", {}).get("prepostos"),
                 "link_responsaveis": item.get("links", {}).get("responsaveis"),
-                "link_despesas_acessorias": item.get("links", {}).get("despesas_acessorias"),
                 "link_faturas": item.get("links", {}).get("faturas"),
                 "link_ocorrencias": item.get("links", {}).get("ocorrencias"),
-                "link_terceirizados": item.get("links", {}).get("terceirizados"),
                 "link_arquivos": item.get("links", {}).get("arquivos"),
-                
-            })
+            }
+            contratos.append(contrato)
+            print(f"Contrato processado: {contrato}")  # Verificar cada contrato processado
+
+        # Salvar os dados no banco de dados
+        print(f"Total de contratos processados: {len(contratos)}")
+        salvar_dados_no_model(contratos)
 
         return JsonResponse({
             'success': True,
-            'message': f"Tabela uasg_{uasg} criada e atualizada com sucesso.",
-            'data': contratos  # Inclua os contratos no campo `data`
+            'message': f"Dados da UASG {uasg} salvos com sucesso.",
+            'data': contratos
         })
 
     except Exception as e:
@@ -251,12 +216,6 @@ def processar_resposta_api(response):
         raise
 
 
-def criar_tabela_uasg(uasg):
-    # Implemente a lógica de criação da tabela
-    tabela_nome = f"uasg_{uasg}"  # Exemplo de nome de tabela
-    logger.info(f"Tabela {tabela_nome} criada.")
-    return tabela_nome
-
 def inserir_dados_na_tabela(tabela_nome, data):
     # Implemente a lógica de inserção dos dados na tabela
     logger.info(f"Inserindo dados na tabela {tabela_nome}.")
@@ -264,3 +223,5 @@ def inserir_dados_na_tabela(tabela_nome, data):
         logger.info(f"Inserindo contrato: {item.get('numero')}")
         # Implemente a lógica de inserção aqui
         pass
+    
+    
