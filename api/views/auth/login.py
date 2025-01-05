@@ -9,7 +9,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -29,17 +28,20 @@ class LoginView(APIView):
             # Gera o token JWT
             refresh = RefreshToken.for_user(user)
 
-            # Verifica o campo UASG
+            # Obtém o campo UASG de forma opcional
             uasg = getattr(user.profile, 'uasg', None)  # Garante que o campo existe
             print(f"DEBUG: UASG para o usuário {user.username}: {uasg}")  # Log do UASG
 
-            # Retorna os dados necessários para o frontend
+            # Cria a resposta com os dados do usuário
             user_data = {
                 "token": str(refresh.access_token),
-                "username": user.email,  # Substituído para retornar o e-mail
+                "username": user.email,  # Retorna o e-mail como username
                 "is_active": user.is_active,  # Adicionado para incluir o estado de ativação
-                "uasg": uasg,  # Incluído o campo UASG
             }
+
+            # Adiciona o UASG à resposta apenas se não for None
+            if uasg:
+                user_data["uasg"] = uasg
 
             return Response(user_data, status=200)
 
