@@ -1,0 +1,38 @@
+  GNU nano 7.2                                                     /etc/nginx/sites-enabled/licitacao360                                                              # Redireciona todo o tráfego HTTP para HTTPS
+server {
+    listen 80;
+    server_name licitacao360.com www.licitacao360.com;
+
+    return 301 https://$host$request_uri;
+}
+
+# Configuração do HTTPS
+server {
+    listen 443 ssl;
+    server_name licitacao360.com www.licitacao360.com;
+
+    # Configuração do certificado SSL
+    ssl_certificate /etc/letsencrypt/live/licitacao360.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/licitacao360.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+    # Diretório do frontend (se houver)
+    location / {
+        root /var/www/licitacao360;
+        index index.html;
+        try_files $uri /index.html;
+    }
+
+    # Configuração do backend API
+    location /api/ {
+        include proxy_params;
+        proxy_pass http://unix:/run/licitacao360.sock;
+
+    }
+
+    # Logs de acesso e erro para o domínio
+    access_log /var/log/nginx/licitacao360_access.log;
+    error_log /var/log/nginx/licitacao360_error.log;
+}
+
