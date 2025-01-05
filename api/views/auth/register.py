@@ -13,6 +13,7 @@ import time
 import logging
 from celery import shared_task
 from django.core.mail import send_mail
+from api.models import Profile
 
 logger = logging.getLogger(__name__)
 
@@ -43,23 +44,17 @@ class RegisterView(APIView):
                 )
                 logger.info(f"Usuário criado: {user.email}")
 
+                # Criar o perfil, se necessário
+                if not hasattr(user, 'profile'):
+                    Profile.objects.create(user=user)
+                    logger.info("Perfil criado manualmente.")
+
                 token = get_random_string(length=64)
                 user.profile.validation_token = token
                 user.profile.save()
 
                 validation_url = f"{settings.BASE_URL}/api/validate-email/{token}"
-
-                logger.info(f"Enviando e-mail de validação para {email}")
                 send_validation_email.delay(email, validation_url)
-
-            logger.info("Resposta enviada para o frontend.")
-            end_time = time.time()
-            print(f"Tempo total de processamento no backend: {end_time - start_time} segundos")
-
-            return Response(
-                {"message": "Usuário registrado com sucesso. Verifique seu e-mail para validar."},
-                status=status.HTTP_201_CREATED,
-            )
         except Exception as e:
             logger.error(f"Erro durante o registro: {e}")
             return Response({"error": f"Erro no registro: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
