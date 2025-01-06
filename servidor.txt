@@ -11,12 +11,6 @@ server {
     listen 443 ssl;
     server_name licitacao360.com www.licitacao360.com;
 
-    # Configuração do certificado SSL
-    ssl_certificate /etc/letsencrypt/live/licitacao360.com/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/licitacao360.com/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-
     # Diretório do frontend (se houver)
     location / {
         root /var/www/licitacao360;
@@ -36,3 +30,11 @@ server {
     error_log /var/log/nginx/licitacao360_error.log;
 }
 
+
+
+
+    # Configuração do certificado SSL
+    ssl_certificate /etc/letsencrypt/live/licitacao360.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/licitacao360.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
