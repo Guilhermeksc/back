@@ -14,6 +14,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    http_method_names = ["post", "options"]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
