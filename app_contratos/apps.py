@@ -6,4 +6,4 @@ class AppContratosConfig(AppConfig):
     name = 'app_contratos'
 
     def ready(self):
-        import app_contratos.signals
+        import api.signals

@@ -5,4 +5,4 @@ class AppPlanejamentoConfig(AppConfig):
     name = 'app_planejamento'
 
     def ready(self):
-        import app_planejamento.signals
+        import api.signals

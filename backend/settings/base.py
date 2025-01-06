@@ -6,8 +6,8 @@ import os
 # Caminho base
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:4200")
+BASE_URL = os.getenv("BASE_URL")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
     
 # Carregar .env
 env_path = BASE_DIR / ".env"

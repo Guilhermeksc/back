@@ -6,6 +6,6 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Carrega as variáveis do arquivo .env
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings.development')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 application = get_wsgi_application()
