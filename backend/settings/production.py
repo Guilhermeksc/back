@@ -6,9 +6,9 @@ from corsheaders.defaults import default_headers
 
 DEBUG = False
 
-BASE_URL = "https://licitacao360.com"
+# BASE_URL = "https://licitacao360.com"
 
-ALLOWED_HOSTS = ['licitacao360.com', 'www.licitacao360.com']
+# ALLOWED_HOSTS = ['licitacao360.com', 'www.licitacao360.com']
 
 # Segurança em produção
 SECURE_BROWSER_XSS_FILTER = True
