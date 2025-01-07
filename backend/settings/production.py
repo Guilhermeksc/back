@@ -17,10 +17,10 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'
 
-CORS_ALLOWED_ORIGINS = [
-    "https://www.licitacao360.com",
-    "https://licitacao360.com",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://www.licitacao360.com",
+#     "https://licitacao360.com",
+# ]
 
 # CORS_ALLOW_HEADERS = list(default_headers) + [
 #     'X-CSRFToken',
