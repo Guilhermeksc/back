@@ -1,40 +1,72 @@
-  GNU nano 7.2                                                     /etc/nginx/sites-enabled/licitacao360                                                              # Redireciona todo o tráfego HTTP para HTTPS
 server {
+    if ($host = www.licitacao360.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    if ($host = licitacao360.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
     listen 80;
+    listen [::]:80;
     server_name licitacao360.com www.licitacao360.com;
 
-    return 301 https://$host$request_uri;
+    # Redirecionar para HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
 }
 
-# Configuração do HTTPS
 server {
     listen 443 ssl;
+    listen [::]:443 ssl;
     server_name licitacao360.com www.licitacao360.com;
 
-    # Diretório do frontend (se houver)
+    ssl_certificate /etc/letsencrypt/live/licitacao360.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/licitacao360.com/privkey.pem; # managed by Certbot
+
+    # Configurações para servir o frontend Angular
     location / {
         root /var/www/licitacao360;
         index index.html;
         try_files $uri /index.html;
     }
 
-    # Configuração do backend API
+    # Configurações para o backend Django (API)
     location /api/ {
-        include proxy_params;
         proxy_pass http://unix:/run/licitacao360.sock;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
+        # Cabeçalhos CORS
+        add_header Access-Control-Allow-Origin "https://www.licitacao360.com" always;
+        add_header Access-Control-Allow-Credentials "true" always;
+        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Authorization, Content-Type" always;
+
+        # Opcional: Suporte a pré-requisições CORS
+        if ($request_method = 'OPTIONS') {
+            add_header Access-Control-Allow-Origin "https://www.licitacao360.com" always;
+            add_header Access-Control-Allow-Credentials "true" always;
+            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
+            add_header Access-Control-Allow-Headers "Authorization, Content-Type" always;
+            return 204;
+        }
     }
 
-    # Logs de acesso e erro para o domínio
-    access_log /var/log/nginx/licitacao360_access.log;
-    error_log /var/log/nginx/licitacao360_error.log;
+    # Configurações para o backend Django (Admin)
+    location /admin/ {
+        proxy_pass http://unix:/run/licitacao360.sock;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Configurações estáticas para Django
+    location /static/ {
+        alias /root/back/staticfiles/;
+    }
 }
-
-
-
-
-    # Configuração do certificado SSL
-    ssl_certificate /etc/letsencrypt/live/licitacao360.com/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/licitacao360.com/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
