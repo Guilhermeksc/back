@@ -44,7 +44,7 @@ def criar_tabela_uasg(uasg):
                 fornecedor_cnpj VARCHAR(18),
                 codigo_orgao VARCHAR(50),
                 orgao_nome VARCHAR(255),
-                uasg VARCHAR(6),
+                unidade_compra VARCHAR(6),
                 sigla_uasg VARCHAR(50),
                 unidade_gestora VARCHAR(255),
                 link_historico TEXT,
@@ -93,14 +93,14 @@ def proxy_download(request, contrato_id):
         
 def consulta_comprasnet_contratos(request):
     logger.info("Consulta recebida")
-    uasg = request.GET.get('uasg')
+    unidade_compra = request.GET.get('unidade_compra')
     
-    if not uasg:
+    if not unidade_compra:
         return JsonResponse({'success': False, 'message': 'Código UASG não fornecido.'}, status=400)
 
     try:
         # URL da API externa
-        api_url = f"https://contratos.comprasnet.gov.br/api/contrato/ug/{uasg}"
+        api_url = f"https://contratos.comprasnet.gov.br/api/contrato/ug/{unidade_compra}"
 
         # Configurar sessão com retries
         session = requests.Session()

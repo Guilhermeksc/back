@@ -7,7 +7,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 @admin.register(controlecomprasnetcontratos)
 class controlecomprasnetcontratosAdmin(admin.ModelAdmin):
     list_display = (
-        'numero', 
+        'numero',
+        'unidade_compra', 
         'fornecedor_nome', 
         'fornecedor_cnpj', 
         'processo', 
@@ -19,7 +20,7 @@ class controlecomprasnetcontratosAdmin(admin.ModelAdmin):
         'vigencia_inicio', 
         'vigencia_fim'
     )
-    search_fields = ('numero', 'fornecedor_nome', 'fornecedor_cnpj', 'processo')
+    search_fields = ('numero', 'unidade_compra', 'fornecedor_nome', 'fornecedor_cnpj', 'processo')
     list_filter = ('tipo', 'situacao', 'categoria', 'prorrogavel')
     readonly_fields = ('link_historico', 'link_empenhos', 'link_garantias', 'link_itens', 'link_prepostos', 'link_responsaveis', 'link_faturas', 'link_ocorrencias', 'link_arquivos',)
     ordering = ('data_assinatura',)

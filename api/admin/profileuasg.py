@@ -7,7 +7,7 @@ class ProfileInline(admin.StackedInline):
     model = Profile
     can_delete = False
     verbose_name_plural = "Perfil"
-    fields = ("uasg",)  # Apenas exibe o campo uasg
+    fields = ("unidade_compra",)  # Apenas exibe o campo uasg
 
 class UserAdmin(BaseUserAdmin):
     inlines = (ProfileInline,)
@@ -21,7 +21,7 @@ class UserAdmin(BaseUserAdmin):
     )
 
     def get_uasg(self, obj):
-        return obj.profile.uasg
+        return obj.profile.unidade_compra
     get_uasg.short_description = "UASG"
 
 # Re-registre o modelo User com o novo UserAdmin

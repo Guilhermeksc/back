@@ -3,7 +3,6 @@
 from django.db import models
 
 class ControleContratos(models.Model):
-    uasg = models.CharField(max_length=10, default="000000", verbose_name="UASG")
 
     numero = models.CharField(max_length=50, verbose_name="Número")
     tipo = models.CharField(max_length=50, verbose_name="Tipo")
@@ -37,7 +36,7 @@ class ControleContratos(models.Model):
     # Informações da contratante
     codigo_orgao = models.CharField(max_length=50, null=True, blank=True, verbose_name="Código do Órgão")
     orgao_nome = models.CharField(max_length=255, verbose_name="Órgão Contratante")
-    uasg = models.CharField(max_length=20, null=True, blank=True, verbose_name="UASG")
+    unidade_compra = models.CharField(max_length=20, null=True, blank=True, verbose_name="UASG")
     sigla_uasg = models.CharField(max_length=50, null=True, blank=True, verbose_name="Sigla da UASG")
     unidade_gestora = models.CharField(max_length=255, verbose_name="Unidade Gestora")
 
@@ -54,19 +53,19 @@ class ControleContratos(models.Model):
 
 
     def __str__(self):
-        return f"{self.numero} - {self.uasg} - {self.fornecedor_nome}"
+        return f"{self.numero} - {self.unidade_compra} - {self.fornecedor_nome}"
 
     class Meta:
         verbose_name = "Controle de Contrato"
         verbose_name_plural = "Controle de Contratos"
-        ordering = ['uasg', 'numero']
+        ordering = ['unidade_compra', 'numero']
 
-def create_dynamic_model(uasg):
-    table_name = f"controle_{uasg}"
+def create_dynamic_model(unidade_compra):
+    table_name = f"controle_{unidade_compra}"
     class Meta:
         db_table = table_name
-        verbose_name = f"Controle {uasg}"
-        verbose_name_plural = f"Controles {uasg}"
+        verbose_name = f"Controle {unidade_compra}"
+        verbose_name_plural = f"Controles {unidade_compra}"
     
     attrs = {
         '__module__': __name__,

@@ -7,12 +7,12 @@ from ...serializer import ComentarioSerializer
 class ComentariosAPIView(APIView):
     def get(self, request):
         numero = request.query_params.get('numero')
-        uasg = request.query_params.get('uasg')
+        unidade_compra = request.query_params.get('unidade_compra')
 
-        if not numero or not uasg:
+        if not numero or not unidade_compra:
             return Response({'error': 'Parâmetros inválidos.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        comentarios = Comentario.objects.filter(numero=numero, uasg=uasg)
+        comentarios = Comentario.objects.filter(numero=numero, unidade_compra=unidade_compra)
         serializer = ComentarioSerializer(comentarios, many=True)
         return Response(serializer.data)
 

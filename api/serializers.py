@@ -21,10 +21,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Log para depuração
         if hasattr(user, 'profile'):
-            data['uasg'] = user.profile.uasg
-            print(f"DEBUG: UASG carregado do Profile: {data['uasg']}")
+            data['unidade_compra'] = user.profile.unidade_compra
+            print(f"DEBUG: UASG carregado do Profile: {data['unidade_compra']}")
         else:
-            data['uasg'] = None
+            data['unidade_compra'] = None
             print("DEBUG: Usuário não possui Profile associado.")
 
         return data

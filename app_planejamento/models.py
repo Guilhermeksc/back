@@ -15,7 +15,7 @@ class ControleProcessos(models.Model):
     objeto_completo = models.TextField(blank=True, null=True)
     vigencia = models.TextField(blank=True, null=True)
     data_sessao = models.DateField(blank=True, null=True)
-    uasg = models.CharField(max_length=10)
+    unidade_compra = models.CharField(max_length=10)
     orgao_responsavel = models.CharField(max_length=250)
     sigla_om = models.CharField(max_length=100)
     setor_responsavel = models.TextField(blank=True, null=True)

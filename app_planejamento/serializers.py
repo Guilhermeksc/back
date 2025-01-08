@@ -8,5 +8,6 @@ class ControleProcessosSerializer(serializers.ModelSerializer):
         model = ControleProcessos
         fields = [
             'id_processo', 'etapa', 'situacao', 'material_servico', 
-            'nup', 'objeto', 'uasg', 'valor_total'
+            'nup', 'objeto', 'unidade_compra', 'valor_total'
         ]
+        

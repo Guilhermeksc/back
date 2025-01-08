@@ -17,8 +17,8 @@ class ControleProcessosViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:  # Confirmação de autenticação
             return ControleProcessos.objects.none()  # Retorna vazio para usuários não autenticados
-        uasg = user.profile.uasg  # Obter a UASG do perfil
-        return ControleProcessos.objects.filter(uasg=uasg)
+        unidade_compra = user.profile.unidade_compra  # Obter a UASG do perfil
+        return ControleProcessos.objects.filter(unidade_compra=unidade_compra)
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -18,8 +18,8 @@ class controlecomprasnetcontratos(models.Model):
     data_assinatura = models.DateField(null=True, blank=True, verbose_name="Data de Assinatura")
     data_publicacao = models.DateField(null=True, blank=True, verbose_name="Data de Publicação")
 
-    vigencia_inicio = models.DateField(verbose_name="Início da Vigência")
-    vigencia_fim = models.DateField(verbose_name="Fim da Vigência")
+    vigencia_inicio = models.DateField(null=True, blank=True, verbose_name="Início da Vigência")
+    vigencia_fim = models.DateField(null=True, blank=True, verbose_name="Fim da Vigência")
 
     # Valores
     valor_inicial = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor Inicial")
@@ -34,7 +34,7 @@ class controlecomprasnetcontratos(models.Model):
     # Informações da contratante
     codigo_orgao = models.CharField(max_length=50, null=True, blank=True, verbose_name="Código do Órgão")
     orgao_nome = models.CharField(max_length=255, verbose_name="Órgão Contratante")
-    uasg = models.CharField(max_length=20, null=True, blank=True, verbose_name="UASG")
+    unidade_compra = models.CharField(max_length=20, null=True, blank=True, verbose_name="UASG")
     sigla_uasg = models.CharField(max_length=50, null=True, blank=True, verbose_name="Sigla da UASG")
     unidade_gestora = models.CharField(max_length=255, verbose_name="Unidade Gestora")
 
@@ -51,19 +51,21 @@ class controlecomprasnetcontratos(models.Model):
 
 
     def __str__(self):
-        return f"{self.numero} - {self.uasg} - {self.fornecedor_nome}"
+        return f"{self.numero} - {self.unidade_compra} - {self.fornecedor_nome}"
 
     class Meta:
         db_table = "app_contratos_controlecomprasnetcontratos"
-        unique_together = ("numero", "uasg")
+        unique_together = ("numero", "unidade_compra")
 
 class Comentario(models.Model):
     numero = models.CharField(max_length=50)
-    uasg = models.CharField(max_length=50)
+    unidade_compra = models.CharField(max_length=50)
     comentario = models.TextField()
     criado_em = models.DateTimeField(auto_now_add=True)  # Define a data de criação
     atualizado_em = models.DateTimeField(auto_now=True)  # Atualiza automaticamente na modificação
 
     def __str__(self):
-        return f"{self.numero} - {self.uasg}"
+        return f"{self.numero} - {self.unidade_compra}"
 
+    class Meta:
+        db_table = "app_contratos_comentario"  # Nome personalizado para a tabela

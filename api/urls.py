@@ -9,7 +9,8 @@ from .views import (
     ActivateUserView,
     ChangePasswordView,
     CustomPasswordResetView,
-    CustomPasswordResetConfirmView
+    CustomPasswordResetConfirmView,
+    ComentariosAPIView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -21,8 +22,9 @@ urlpatterns = [
     path('password-reset/', CustomPasswordResetView.as_view(), name='password_reset'),
     path('password-reset-confirm/<uidb64>/<token>/', CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('password-change/', ChangePasswordView.as_view(), name='password_change'),  # Adiciona a URL para troca de senha
-    # Inclua todas as rotas do app_contratos em um namespace
+
     path('comprasnet-contratos/', include('app_contratos.urls')),
+
 
     # Inclui as rotas de planejamento
     path('', include('app_planejamento.urls')),
