@@ -10,30 +10,6 @@ from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
-
-class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        logger.debug(f"Payload recebido: {request.data}")  # Loga o payload recebido
-        user = request.user
-        old_password = request.data.get("old_password")
-        new_password = request.data.get("new_password1")
-        confirm_password = request.data.get("new_password2")
-
-        if not old_password or not new_password or not confirm_password:
-            return Response({"error": "Todos os campos são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not user.check_password(old_password):
-            return Response({"error": "Senha atual incorreta."}, status=status.HTTP_400_BAD_REQUEST)
-
-        if new_password != confirm_password:
-            return Response({"error": "As senhas não coincidem."}, status=status.HTTP_400_BAD_REQUEST)
-
-        user.set_password(new_password)
-        user.save()
-        return Response({"message": "Senha alterada com sucesso."}, status=status.HTTP_200_OK)
-
 from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -43,14 +19,13 @@ class CustomPasswordResetView(APIView):
     permission_classes = []
 
     def post(self, request):
-        username = request.data.get("username")
         email = request.data.get("email")
 
-        if not username or not email:
-            return Response({"error": "Username e e-mail são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
+        if not email:
+            return Response({"error": "O e-mail é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(username=username, email=email)
+            user = User.objects.get(email=email)
             token_generator = PasswordResetTokenGenerator()
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = token_generator.make_token(user)
@@ -61,7 +36,7 @@ class CustomPasswordResetView(APIView):
             # Envia o e-mail de redefinição de senha
             send_mail(
                 subject="Redefinição de Senha",
-                message=f"Olá {user.username}, use o link abaixo para redefinir sua senha:\n\n{reset_url}",
+                message=f"Use o link abaixo para redefinir sua senha:\n\n{reset_url}",
                 from_email=settings.EMAIL_HOST_USER,
                 recipient_list=[user.email],
                 fail_silently=False,

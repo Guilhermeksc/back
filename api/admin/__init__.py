@@ -1,5 +1,4 @@
 from .admin import ControleContratosAdmin
-from .profileuasg import ProfileInline, UserAdmin
 from django.contrib import admin
 
 admin.site.site_header = "Administração do Licitação 360"  # Cabeçalho principal

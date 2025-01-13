@@ -27,6 +27,8 @@ celery -A backend worker --pool=solo --loglevel=info
 "password": "marinha"
 }
 
+DROP DATABASE licitacao360;
+CREATE DATABASE licitacao360;
 
 psql -U postgres -d licitacao360
 
@@ -44,4 +46,4 @@ BEGIN
 END $$;
 
 
- python manage.py runserver --verbosity 3
+python manage.py runserver --verbosity 3

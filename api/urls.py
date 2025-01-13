@@ -10,7 +10,6 @@ from .views import (
     ChangePasswordView,
     CustomPasswordResetView,
     CustomPasswordResetConfirmView,
-    ComentariosAPIView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 

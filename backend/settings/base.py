@@ -23,6 +23,8 @@ if env_path.exists():
 SECRET_KEY = os.getenv("SECRET_KEY", "default-secret-key")  # Use variável de ambiente para segurança
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
+AUTH_USER_MODEL = 'api.CustomUser'
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
